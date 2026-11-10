@@ -1,94 +1,44 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 3,
-   "id": "d03390f3",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Model Score: 64.01 %\n",
-      "\n",
-      "Enter house details:\n",
-      "\n",
-      "Predicted House Price: $ 409838.15\n"
-     ]
-    }
-   ],
-   "source": [
-    "\n",
-    "import pandas as pd\n",
-    "from sklearn.model_selection import train_test_split\n",
-    "from sklearn.linear_model import LinearRegression\n",
-    "from sklearn.metrics import accuracy_score\n",
-    "\n",
-    "# Load dataset\n",
-    "data = pd.read_csv(\"housing.csv\")\n",
-    "data = data.dropna()\n",
-    "\n",
-    "# Select features and target\n",
-    "features = ['longitude', 'latitude', 'housing_median_age',\n",
-    "            'total_rooms', 'total_bedrooms', 'population',\n",
-    "            'households', 'median_income']\n",
-    "\n",
-    "X = data[features]\n",
-    "y = data['median_house_value']\n",
-    "\n",
-    "# Split dataset\n",
-    "X_train, X_test, y_train, y_test = train_test_split(\n",
-    "    X, y, test_size=0.2, random_state=42\n",
-    ")\n",
-    "\n",
-    "# Train model\n",
-    "model = LinearRegression()\n",
-    "model.fit(X_train, y_train)\n",
-    "\n",
-    "# Evaluate model\n",
-    "print(\"Model Score:\", round(model.score(X_test, y_test) * 100, 2), \"%\")\n",
-    "\n",
-    "# Get house details\n",
-    "print(\"\\nEnter house details:\")\n",
-    "values = []\n",
-    "\n",
-    "for feature in features:\n",
-    "    values.append(float(input(feature + \": \")))\n",
-    "\n",
-    "# Predict house price\n",
-    "house = pd.DataFrame([values], columns=features)\n",
-    "prediction = model.predict(house)\n",
-    "\n",
-    "print(\"\\nPredicted House Price: $\", round(prediction[0], 2))\n"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "id": "15395902",
-   "metadata": {},
-   "source": []
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.11.9"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, r2_score
+
+# Load dataset
+df = pd.read_csv("housing.csv")
+
+# Handle missing values
+df = df.dropna(subset=["median_house_value"])
+df = df.fillna(df.median(numeric_only=True))
+df = df.fillna(df.mode().iloc[0])
+
+# Convert categorical data
+df = pd.get_dummies(df, drop_first=True, dtype=int)
+
+# Separate input and output
+X = df.drop("median_house_value", axis=1)
+y = df["median_house_value"]
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+
+# Train model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Evaluate model
+pred = model.predict(X_test)
+print("MAE:", mean_absolute_error(y_test, pred))
+print("R2 Score:", r2_score(y_test, pred))
+
+# Get new house details
+house = []
+for col in X.columns:
+    house.append(float(input(col + ": ")))
+
+# Predict house price
+new_data = pd.DataFrame([house], columns=X.columns)
+price = model.predict(new_data)
+
+print("Predicted House Value:", round(price[0], 2))
