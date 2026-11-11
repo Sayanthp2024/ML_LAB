@@ -1,11 +1,10 @@
-
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 import matplotlib.pyplot as plt
 
 # Load dataset
-df = pd.read_csv("/content/sample_data/cars (1).csv")
+df = pd.read_csv("cars.csv")
 
 X = df.iloc[:, :-1].copy()
 y = df.iloc[:, -1]
